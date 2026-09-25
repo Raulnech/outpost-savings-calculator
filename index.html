@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}</style>
+<title>Outpost Buyer Business Case</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper: #f4f5f1; --card: #ffffff; --ink: #1b2330; --muted: #5b6472; --rule: #d8dcd2;
+    --accent: #1d5c8f; --accent-soft: #e3edf5; --good: #2f7a4f; --good-soft: #d7ecdf;
+    --bad: #b0413e; --bad-soft: #f3dcdb;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --cond: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #12171e; --card: #1a212b; --ink: #e6e9ee; --muted: #9aa3b1; --rule: #2c3542;
+      --accent: #7fb3e0; --accent-soft: #1f3347; --good: #6cc08f; --good-soft: #1d3a2a;
+      --bad: #e08480; --bad-soft: #3d2322;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #12171e; --card: #1a212b; --ink: #e6e9ee; --muted: #9aa3b1; --rule: #2c3542;
+    --accent: #7fb3e0; --accent-soft: #1f3347; --good: #6cc08f; --good-soft: #1d3a2a;
+    --bad: #e08480; --bad-soft: #3d2322;
+  }
+
+  [hidden] { display: none !important; }
+  body { background: var(--paper); color: var(--ink); font: 15px/1.55 var(--sans); }
+  .wrap { max-width: 900px; margin: 0 auto; padding-inline: 16px; padding-block: 0 56px; }
+  h1, h2, h3 { font-family: var(--cond); font-weight: 600; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(26px, 4vw, 34px); line-height: 1.15; }
+  h2 { font-size: 20px; }
+  p { margin: 0; max-width: 68ch; }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+  .label { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .pos { color: var(--good); } .neg { color: var(--bad); }
+
+  .banner { background: var(--ink); color: var(--paper); font-size: 13px; }
+  .banner .wrap { padding-block: 10px; }
+  header.intro { display: grid; gap: 8px; padding-block: 26px 16px; }
+
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--rule); margin-bottom: 20px; }
+  .tabs button { font: 500 15px var(--sans); color: var(--muted); background: none; border: 0; padding: 10px 14px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+  .calc { background: var(--card); border: 1px solid var(--rule); border-radius: 8px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
+  @media (max-width: 720px) { .calc { grid-template-columns: minmax(0, 1fr); } }
+  .inputs { padding: 22px; display: grid; gap: 18px; align-content: start; border-right: 1px solid var(--rule); }
+  @media (max-width: 720px) { .inputs { border-right: 0; border-bottom: 1px solid var(--rule); } }
+  .answer { padding: 22px; display: grid; gap: 18px; align-content: start; }
+  .field { display: grid; gap: 7px; }
+  .field label, .field legend { font-weight: 500; font-size: 14px; }
+  input[type="number"], input[type="text"] { font: 15px var(--mono); padding: 8px 10px; border: 1px solid var(--rule); border-radius: 4px; background: var(--paper); color: var(--ink); width: 100%; box-sizing: border-box; }
+  input[type="text"] { font-family: var(--sans); font-size: 14px; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  fieldset { border: 0; padding: 0; margin: 0; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+  .seg label { display: block; text-align: center; padding: 8px 6px; font-size: 14px; font-weight: 400; cursor: pointer; background: var(--paper); }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg label:has(input:checked) { background: var(--card); box-shadow: inset 0 -2px 0 var(--accent); font-weight: 600; color: var(--accent); }
+  .seg label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+  details.adv { border-top: 1px solid var(--rule); padding-top: 14px; }
+  details.adv summary { cursor: pointer; font-size: 14px; color: var(--accent); }
+  details.adv .advbody { display: grid; gap: 12px; margin-top: 12px; }
+  .split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 10px; }
+  .split label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 400; }
+  .ownlist { display: grid; gap: 8px; }
+  .ownrow { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+  .btn { font: 14px var(--sans); border: 1px solid var(--rule); border-radius: 4px; background: var(--card); color: var(--accent); padding: 7px 10px; cursor: pointer; }
+  .addbtn { justify-self: start; }
+  .error { color: var(--bad); font-size: 13px; }
+
+  .be-label { font-size: 15px; }
+  .big { font: 500 clamp(44px, 8vw, 60px)/1 var(--mono); color: var(--ink); }
+  .meter { display: grid; gap: 6px; }
+  .bar { position: relative; height: 16px; border-radius: 8px; background: var(--bad-soft); }
+  .bar .ok { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 8px 0 0 8px; background: var(--good-soft); border-right: 2px solid var(--good); }
+  .bar .pin { position: absolute; top: -6px; width: 3px; height: 28px; background: var(--ink); border-radius: 2px; transform: translateX(-50%); }
+  .bar .pintag { position: absolute; top: 26px; transform: translateX(-50%); font: 500 12px var(--mono); white-space: nowrap; }
+  .bar .ok { transition: width 0.25s ease; }
+  .bar .pin, .bar .pintag { transition: left 0.25s ease; }
+  @media (prefers-reduced-motion: reduce) { .bar .ok, .bar .pin, .bar .pintag { transition: none; } }
+  .scale { display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--muted); margin-top: 18px; }
+  .key { display: flex; gap: 14px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+  .key span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .key .k-ok::before { background: var(--good-soft); border: 1px solid var(--good); }
+  .key .k-no::before { background: var(--bad-soft); border: 1px solid var(--bad); }
+  .result { border-radius: 6px; padding: 14px 16px; display: grid; gap: 4px; }
+  .result.good { background: var(--good-soft); } .result.bad { background: var(--bad-soft); }
+  .result b { font: 500 22px var(--mono); }
+  .steps { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .steps td { padding: 7px 0; border-bottom: 1px solid var(--rule); }
+  .steps td.r { text-align: right; }
+  .steps tr.total td { border-bottom: 0; font-weight: 600; }
+
+  .page { display: grid; gap: 28px; }
+  section.r { display: grid; gap: 10px; }
+  section.r h2 { padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
+  .tablewrap { overflow-x: auto; background: var(--card); border: 1px solid var(--rule); border-radius: 6px; }
+  table.t { border-collapse: collapse; width: 100%; font-size: 14px; }
+  table.t th, table.t td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  table.t tbody:last-child tr:last-child td { border-bottom: 0; }
+  table.t th { font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  table.t td.r, table.t th.r { text-align: right; }
+  table.t tr.total td { font-weight: 600; }
+  .work { display: block; font: 12px var(--mono); color: var(--muted); margin-top: 2px; }
+  ul.plain, ol.plain { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 72ch; }
+  .after { display: grid; gap: 16px; margin-top: 22px; justify-items: start; }
+  .btn.research { display: inline-block; text-decoration: none; font-weight: 600; padding: 10px 16px; background: var(--accent); color: var(--card); border-color: var(--accent); }
+  details.src summary { cursor: pointer; color: var(--accent); }
+  details.src .tablewrap { margin-top: 10px; }
+  .sources td:last-child { white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="banner"><div class="wrap">Prototype by Raul Nechita, a job candidate. Not an Outpost product. Example merchant. Outpost's fee is not public. Not tax advice.</div></div>
+
+<div class="wrap">
+  <header class="intro">
+    <span class="label">Outpost savings calculator</span>
+    <h1>At what fee does Outpost pay for itself?</h1>
+    <p class="muted">A UK brand selling physical goods to shoppers in Germany, France, the Netherlands and Ireland. Outpost compared with the brand doing it alone, using published prices.</p>
+  </header>
+
+  <div id="pageCalc">
+    <div class="calc">
+      <form class="inputs" id="inputs" autocomplete="off">
+        <div class="field">
+          <label for="sales">Yearly sales into the EU (EUR, incl. VAT)</label>
+          <input type="number" id="sales" min="100000" step="100000" value="2000000">
+        </div>
+        <div class="field">
+          <label for="aov">Average order (EUR)</label>
+          <input type="number" id="aov" min="5" max="150" step="5" value="60">
+        </div>
+        <fieldset class="field">
+          <legend>Does Outpost's fee cover card processing?</legend>
+          <div class="seg">
+            <label><input type="radio" name="feeModel" id="fmOnTop" value="ontop" checked>No, on top</label>
+            <label><input type="radio" name="feeModel" id="fmAllIn" value="allin">Yes, all-in</label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="rise">More card payments approved: <span class="num" id="riseOut">7%</span></label>
+          <input type="range" id="rise" min="0" max="25" step="1" value="7">
+        </div>
+        <div class="field">
+          <label for="fee">Outpost fee: <span class="num" id="feeOut">3.5%</span></label>
+          <input type="range" id="fee" min="1" max="8" step="0.1" value="3.5">
+        </div>
+
+        <details class="adv" id="ownBox">
+          <summary>Add your own costs <span class="num" id="ownSum"></span></summary>
+          <div class="advbody">
+            <div id="ownList" class="ownlist"></div>
+            <button type="button" id="addCost" class="btn addbtn">+ Add a cost</button>
+          </div>
+        </details>
+
+        <details class="adv">
+          <summary>More settings</summary>
+          <div class="advbody">
+            <fieldset class="field">
+              <legend>Sales by country (%)</legend>
+              <div class="split" id="split"></div>
+              <div class="small muted" id="splitHint"></div>
+            </fieldset>
+            <div class="field">
+              <label for="margin">Gross margin (%)</label>
+              <input type="number" id="margin" min="1" max="95" step="1" value="55">
+            </div>
+          </div>
+        </details>
+        <p class="error" id="err" hidden></p>
+      </form>
+
+      <div class="answer" id="answer">
+        <div class="field">
+          <span class="be-label">Outpost pays for itself at any fee up to</span>
+          <span class="big" id="be"></span>
+        </div>
+
+        <div class="meter" aria-hidden="true">
+          <div class="bar" id="bar"><div class="ok" id="barOk"></div><div class="pin" id="pin"></div><span class="pintag" id="pinTag"></span></div>
+          <div class="scale"><span>0%</span><span>2%</span><span>4%</span><span>6%</span><span>8%</span></div>
+          <div class="key"><span class="k-ok">Outpost pays for itself</span><span class="k-no">Brand better off alone</span></div>
+        </div>
+
+        <div class="result" id="result"><span id="resultLine"></span><b id="resultAmt"></b></div>
+        <p id="needed"></p>
+
+        <table class="steps">
+          <tr><td>Costs Outpost removes</td><td class="r num" id="sRemoved"></td></tr>
+          <tr id="sOwnRow" hidden><td>Your own costs</td><td class="r num" id="sOwn"></td></tr>
+          <tr><td>Profit on extra approved sales</td><td class="r num" id="sExtra"></td></tr>
+          <tr><td>Outpost fee</td><td class="r num" id="sFee"></td></tr>
+          <tr class="total"><td>Result a year</td><td class="r num" id="sNet"></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="after">
+    <a class="btn research" id="researchLink" href="#" target="_blank" rel="noopener" hidden>Read the research behind this</a>
+    <details class="src">
+      <summary>Sources, with dates checked</summary>
+      <div class="tablewrap"><table class="t sources"><thead><tr><th>Figure</th><th>Value</th><th>Type</th><th>Checked</th></tr></thead><tbody id="sources"></tbody></table></div>
+    </details>
+  </div>
+</div>
+
+<script>// The savings maths for the page. Same formulas as calc/model.py; tests/test_page_parity.py
+// checks both give the same numbers. Money is EUR. Rates and shares are fractions.
+(function (root) {
+  function blendedVat(markets) {
+    const total = markets.reduce((s, m) => s + m.share, 0);
+    if (Math.abs(total - 1) > 1e-9) throw new Error("market shares add to " + total + ", not 1");
+    return markets.reduce((s, m) => s + m.share * m.vatRate, 0);
+  }
+  const netSales = (gross, vat) => gross / (1 + vat);
+  const orders = (sales, averageOrder) => sales / averageOrder;
+  const cardFees = (sales, orderCount, pct, fixedEur) => sales * pct + orderCount * fixedEur;
+  const iossAgentFlat = (monthlyFee) => monthlyFee * 12;
+  function iossAgentPerOrder(monthlyFee, includedPerMonth, perOrder, orderCount) {
+    return monthlyFee * 12 + Math.max(0, orderCount - includedPerMonth * 12) * perOrder;
+  }
+  function iossAgentCheapest(orderCount, flatMonthly, flatLimitPerMonth, tieredPlans) {
+    const options = tieredPlans.map(([m, inc, per]) => iossAgentPerOrder(m, inc, per, orderCount));
+    if (orderCount / 12 <= flatLimitPerMonth) options.push(iossAgentFlat(flatMonthly));
+    return Math.min(...options);
+  }
+  const costsRemoved = (cardAlone, cardWithOutpost, fxSaved, agent, ownCosts = 0) =>
+    cardAlone - cardWithOutpost + fxSaved + agent + ownCosts;
+  function extraSalesValue(sales, rise, vat, margin, cardPct, cardFixed, averageOrder) {
+    const extra = sales * rise;
+    return margin * netSales(extra, vat) - cardFees(extra, extra / averageOrder, cardPct, cardFixed);
+  }
+  function riseNeeded(removed, sales, fee, vat, margin, cardPct, cardFixed, averageOrder) {
+    const shortfall = fee * sales - removed;
+    if (shortfall <= 0) return 0;
+    const perUnit = margin / (1 + vat) - cardPct - cardFixed / averageOrder - fee;
+    if (perUnit <= 0) return null;
+    return shortfall / (sales * perUnit);
+  }
+  const breakEvenFee = (savings, extraValue, sales, rise) => (savings + extraValue) / (sales * (1 + rise));
+  const netBenefit = (savings, extraValue, sales, rise, fee) => savings + extraValue - fee * sales * (1 + rise);
+  const lowValueDuty = (orderCount, linesPerOrder, dutyPerLine) => orderCount * linesPerOrder * dutyPerLine;
+
+  const api = { blendedVat, netSales, orders, cardFees, iossAgentFlat, iossAgentPerOrder, iossAgentCheapest, costsRemoved,
+    extraSalesValue, riseNeeded, breakEvenFee, netBenefit, lowValueDuty };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else root.OutpostCalc = api;
+})(this);
+</script>
+<script>
+const DATA = {
+ "research_doc": "https://docs.google.com/document/d/1SOUFY7OPjBBpfTZI_Dz0-Kou97GniynmQ1dOsIPXeNk/edit?usp=sharing",
+ "vat": [
+  {
+   "code": "DE",
+   "rate": 0.19
+  },
+  {
+   "code": "FR",
+   "rate": 0.2
+  },
+  {
+   "code": "NL",
+   "rate": 0.21
+  },
+  {
+   "code": "IE",
+   "rate": 0.23
+  }
+ ],
+ "gbp_per_eur": 0.8599,
+ "duty_per_line": 3.0,
+ "prices": {
+  "stripe_uk_pct": 0.025,
+  "stripe_uk_fixed_gbp": 0.2,
+  "stripe_fx": 0.02,
+  "stripe_de_pct": 0.015,
+  "stripe_de_fixed": 0.25,
+  "eas_month": 590.0,
+  "eas_limit": 5000.0,
+  "eas_plus_month": 329.0,
+  "eas_plus_included": 1000.0,
+  "eas_plus_extra": 0.25,
+  "cbi_month": 110.0,
+  "cbi_included": 100.0,
+  "cbi_per_order": 1.0,
+  "shopify_low": 0.0325,
+  "shopify_high": 0.035,
+  "paddle": 0.05,
+  "de_formation": 805.0,
+  "de_capital": 25000.0
+ },
+ "claims": [
+  {
+   "claim_id": "mor_page",
+   "where": "Merchant of record page",
+   "wording": "approval rates \"rise by 7% on average\"",
+   "value": "7",
+   "unit": "percent",
+   "source_url": "https://outpost.ai/merchant-of-record/",
+   "source_type": "outpost_claim",
+   "checked_on": "2026-09-25",
+   "status": "confirmed",
+   "note": "Points or a relative rise is not stated. The page treats it as a relative rise."
+  },
+  {
+   "claim_id": "press",
+   "where": "Series A press release",
+   "wording": "merchants see \"10% higher approval rates\"",
+   "value": "10",
+   "unit": "percent",
+   "source_url": "https://www.eu-startups.com/2026/03/british-startup-outpost-raises-e15-million-to-build-liability-free-cross-border-commerce-platform/",
+   "source_type": "outpost_claim",
+   "checked_on": "2026-09-25",
+   "status": "confirmed",
+   "note": ""
+  },
+  {
+   "claim_id": "home_page",
+   "where": "Home page",
+   "wording": "\"25-40% more cards go through\"",
+   "value": "25 to 40",
+   "unit": "percent",
+   "source_url": "https://outpost.ai/",
+   "source_type": "outpost_claim",
+   "checked_on": "2026-09-25",
+   "status": "confirmed",
+   "note": ""
+  },
+  {
+   "claim_id": "mor_levels",
+   "where": "Merchant of record page",
+   "wording": "local cards \"90%+\" against cross-border \"60 to 70%\"",
+   "value": "20 to 30",
+   "unit": "points",
+   "source_url": "https://outpost.ai/merchant-of-record/",
+   "source_type": "outpost_claim",
+   "checked_on": "2026-09-25",
+   "status": "confirmed",
+   "note": "Implied gap between the two approval levels."
+  },
+  {
+   "claim_id": "brazil_case",
+   "where": "Series A press release",
+   "wording": "a marketplace was \"leaking 14% of gross revenue\"",
+   "value": "14",
+   "unit": "percent",
+   "source_url": "https://www.eu-startups.com/2026/03/british-startup-outpost-raises-e15-million-to-build-liability-free-cross-border-commerce-platform/",
+   "source_type": "outpost_claim",
+   "checked_on": "2026-09-25",
+   "status": "confirmed",
+   "note": "One digital case in Brazil; covers declines; FX and local payment methods together."
+  }
+ ],
+ "sources": [
+  {
+   "label": "Standard VAT, DE",
+   "value": "19%",
+   "url": "https://taxfoundation.org/data/all/eu/value-added-tax-vat-rates-europe/",
+   "status": "confirmed",
+   "type": "secondary",
+   "checked": "2026-09-24"
+  },
+  {
+   "label": "Standard VAT, FR",
+   "value": "20%",
+   "url": "https://taxfoundation.org/data/all/eu/value-added-tax-vat-rates-europe/",
+   "status": "confirmed",
+   "type": "secondary",
+   "checked": "2026-09-24"
+  },
+  {
+   "label": "Standard VAT, NL",
+   "value": "21%",
+   "url": "https://taxfoundation.org/data/all/eu/value-added-tax-vat-rates-europe/",
+   "status": "confirmed",
+   "type": "secondary",
+   "checked": "2026-09-24"
+  },
+  {
+   "label": "Standard VAT, IE",
+   "value": "23%",
+   "url": "https://taxfoundation.org/data/all/eu/value-added-tax-vat-rates-europe/",
+   "status": "confirmed",
+   "type": "secondary",
+   "checked": "2026-09-24"
+  },
+  {
+   "label": "Stripe UK, EU cards",
+   "value": "2.5% + 20p",
+   "url": "https://stripe.com/gb/pricing",
+   "status": "confirmed",
+   "type": "vendor",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "Stripe UK, currency conversion",
+   "value": "2%",
+   "url": "https://stripe.com/gb/pricing",
+   "status": "confirmed",
+   "type": "vendor",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "Stripe Germany, EEA cards",
+   "value": "1.5% + EUR 0.25",
+   "url": "https://stripe.com/en-de/pricing",
+   "status": "confirmed",
+   "type": "vendor",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "ECB rate, GBP per EUR",
+   "value": "0.8599 (2026-09-24)",
+   "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.GBP.EUR.SP00.A",
+   "status": "confirmed",
+   "type": "official",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "EAS IOSS XL",
+   "value": "EUR 590 a month, up to 5,000 orders",
+   "url": "https://easproject.com/pricing/",
+   "status": "confirmed",
+   "type": "vendor",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "EAS IOSS Plus",
+   "value": "EUR 329 a month, 1,000 orders included, then EUR 0.25 each",
+   "url": "https://easproject.com/pricing/",
+   "status": "confirmed",
+   "type": "vendor",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "Crossborderit IOSS",
+   "value": "EUR 110 a month + EUR 1 an order",
+   "url": "https://www.crossborderit.com/ioss",
+   "status": "confirmed",
+   "type": "vendor",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "EU EUR 3 low-value duty",
+   "value": "EUR 3 per item type",
+   "url": "https://taxation-customs.ec.europa.eu/news/guidance-and-legal-text-temporary-flat-fee-low-value-imports-which-will-apply-until-1-july-2028-2026-06-08_en",
+   "status": "confirmed",
+   "type": "official",
+   "checked": "2026-09-23"
+  },
+  {
+   "label": "EUR 3 duty on UK-made goods via IOSS",
+   "value": "applies",
+   "url": "https://taxation-customs.ec.europa.eu/document/download/053e5b4e-f0be-4f20-9a23-3e3b659a6676_en?filename=Customs+Guidance+on+EUR+3+customs+duty.pdf",
+   "status": "confirmed",
+   "type": "official",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "Shopify Managed Markets fee",
+   "value": "3.25% to 3.5% + card and FX fees",
+   "url": "https://help.shopify.com/en/manual/international/managed-markets/shopify-payments",
+   "status": "confirmed",
+   "type": "vendor",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "Paddle fee",
+   "value": "5% + 50c, card fees included",
+   "url": "https://www.paddle.com/alternatives/fastspring-vs-stripe",
+   "status": "confirmed",
+   "type": "vendor",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "German GmbH notary and register fees",
+   "value": "about EUR 805",
+   "url": "https://www.ihk-bonn.de/",
+   "status": "confirmed",
+   "type": "professional",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "German GmbH share capital",
+   "value": "EUR 25,000",
+   "url": "https://www.gesetze-im-internet.de/gmbhg/__5.html",
+   "status": "confirmed",
+   "type": "official",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "Outpost claim: Merchant of record page",
+   "value": "7%",
+   "url": "https://outpost.ai/merchant-of-record/",
+   "status": "confirmed",
+   "type": "outpost_claim",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "Outpost claim: Series A press release",
+   "value": "10%",
+   "url": "https://www.eu-startups.com/2026/03/british-startup-outpost-raises-e15-million-to-build-liability-free-cross-border-commerce-platform/",
+   "status": "confirmed",
+   "type": "outpost_claim",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "Outpost claim: Home page",
+   "value": "25 to 40%",
+   "url": "https://outpost.ai/",
+   "status": "confirmed",
+   "type": "outpost_claim",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "Outpost claim: Merchant of record page",
+   "value": "20 to 30 pts",
+   "url": "https://outpost.ai/merchant-of-record/",
+   "status": "confirmed",
+   "type": "outpost_claim",
+   "checked": "2026-09-25"
+  },
+  {
+   "label": "Outpost claim: Series A press release",
+   "value": "14%",
+   "url": "https://www.eu-startups.com/2026/03/british-startup-outpost-raises-e15-million-to-build-liability-free-cross-border-commerce-platform/",
+   "status": "confirmed",
+   "type": "outpost_claim",
+   "checked": "2026-09-25"
+  }
+ ]
+};
+(function () {
+  const C = window.OutpostCalc, P = DATA.prices;
+  const $ = (id) => document.getElementById(id);
+  const eur = (x) => (x < 0 ? "-" : "") + "EUR " + Math.round(Math.abs(x)).toLocaleString("en-GB");
+  const signed = (x) => `<span class="${x >= 0 ? "pos" : "neg"}">${x >= 0 ? "+" : ""}${eur(x)}</span>`;
+  const pct = (x) => (x * 100).toFixed(2) + "%";
+  const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+  const START = { DE: 40, FR: 30, NL: 20, IE: 10 };
+  const NAMES = { DE: "Germany", FR: "France", NL: "Netherlands", IE: "Ireland" };
+
+  if (DATA.research_doc) { $("researchLink").href = DATA.research_doc; $("researchLink").hidden = false; }
+
+  $("split").innerHTML = DATA.vat.map((m) =>
+    `<label for="s${m.code}">${NAMES[m.code]} (VAT ${Math.round(m.rate * 100)}%)` +
+    `<input type="number" id="s${m.code}" min="0" max="100" step="5" value="${START[m.code]}"></label>`).join("");
+  $("sources").innerHTML = DATA.sources.map((s) =>
+    `<tr><td>${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>` : esc(s.label)}</td>` +
+    `<td class="num">${esc(s.value)}</td><td>${esc(s.type.replace("_", " "))}</td><td class="num">${esc(s.checked || "")}</td></tr>`).join("");
+
+  const MAX = 0.08;
+  const at = (x) => (Math.min(Math.max(x, 0), MAX) / MAX * 100) + "%";
+
+  let rowCount = 0;
+  function addRow() {
+    rowCount += 1;
+    const row = document.createElement("div");
+    row.className = "ownrow";
+    row.innerHTML = `<input type="text" id="costName${rowCount}" aria-label="Cost name" placeholder="Cost name">` +
+      `<input type="number" id="costAmt${rowCount}" aria-label="EUR a year" min="0" step="1000" placeholder="EUR / year">` +
+      `<button type="button" class="btn" aria-label="Remove this cost">Remove</button>`;
+    row.querySelector("button").addEventListener("click", () => { row.remove(); render(); });
+    $("ownList").appendChild(row);
+  }
+  $("addCost").addEventListener("click", () => { addRow(); render(); });
+  addRow();
+
+  let errTimer = null;
+  function render(evt) {
+    const markets = DATA.vat.map((m) => ({ code: m.code, share: Number($("s" + m.code).value) / 100, vatRate: m.rate }));
+    const total = markets.reduce((s, m) => s + m.share, 0);
+    const sales = Number($("sales").value), aov = Number($("aov").value);
+    const margin = Number($("margin").value) / 100, rise = Number($("rise").value) / 100, fee = Number($("fee").value) / 100;
+    const allIn = $("fmAllIn").checked;
+    $("feeOut").textContent = (fee * 100).toFixed(1) + "%";
+    $("riseOut").textContent = Math.round(rise * 100) + "%";
+    $("splitHint").textContent = "Total: " + Math.round(total * 100) + "%";
+    const bad = Math.abs(total - 1) > 1e-9 ? "Sales by country must add up to 100% (under More settings)."
+      : !(sales >= 100000 && sales <= 100000000) ? "Enter yearly sales between EUR 100,000 and EUR 100 million."
+      : !(aov > 0 && aov <= 150) ? "Average order must be up to EUR 150."
+      : !(margin > 0 && margin < 1) ? "Margin must be between 1% and 99%." : "";
+    clearTimeout(errTimer);
+    if (bad && evt && evt.type === "input") {
+      // Mid-typing (e.g. "2000" on the way to "2000000"): keep the last answer, and only
+      // show the error if the reader stops typing.
+      errTimer = setTimeout(() => render({ type: "change" }), 900);
+      return;
+    }
+    $("err").hidden = !bad; $("err").textContent = bad;
+    $("answer").style.opacity = bad ? 0.35 : 1;
+    if (bad) {
+      $("be").textContent = "check";
+      for (const id of ["resultLine", "resultAmt", "needed", "sRemoved", "sOwn", "sExtra", "sFee", "sNet", "pinTag"]) $(id).textContent = "";
+      return;
+    }
+
+    const vat = C.blendedVat(markets);
+    const n = C.orders(sales, aov);
+    const monthly = n / 12;
+    const cardDiy = C.cardFees(sales, n, P.stripe_uk_pct, P.stripe_uk_fixed_gbp / DATA.gbp_per_eur);
+    const cardOp = allIn ? 0 : C.cardFees(sales, n, P.stripe_de_pct, P.stripe_de_fixed);
+    const agent = C.iossAgentCheapest(n, P.eas_month, P.eas_limit, [[P.eas_plus_month, P.eas_plus_included, P.eas_plus_extra], [P.cbi_month, P.cbi_included, P.cbi_per_order]]);
+    const ownRows = [...document.querySelectorAll(".ownrow")].map((r) => ({
+      name: r.querySelector("input[type=text]").value.trim() || "Unnamed cost",
+      amount: Math.max(0, Number(r.querySelector("input[type=number]").value) || 0),
+    })).filter((r) => r.amount > 0);
+    const own = ownRows.reduce((t, r) => t + r.amount, 0);
+    const removed = C.costsRemoved(cardDiy, cardOp, 0, agent, own);
+    const cardPct = allIn ? 0 : P.stripe_de_pct, cardFixed = allIn ? 0 : P.stripe_de_fixed;
+    const extra = C.extraSalesValue(sales, rise, vat, margin, cardPct, cardFixed, aov);
+    const be = C.breakEvenFee(removed, extra, sales, rise);
+    const net = C.netBenefit(removed, extra, sales, rise, fee);
+    const feeAmt = fee * sales * (1 + rise);
+    const feeTxt = (fee * 100).toFixed(1) + "%";
+
+    $("be").textContent = pct(be);
+    $("barOk").style.width = at(be);
+    $("pin").style.left = at(fee); $("pinTag").style.left = at(fee);
+    $("pinTag").textContent = "Outpost fee " + feeTxt;
+    $("result").className = "result " + (net >= 0 ? "good" : "bad");
+    $("resultLine").textContent = net >= 0 ? `At a ${feeTxt} fee, the brand saves` : `At a ${feeTxt} fee, the brand loses`;
+    $("resultAmt").textContent = eur(Math.abs(net)) + " a year";
+
+    const need = C.riseNeeded(removed, sales, fee, vat, margin, cardPct, cardFixed, aov);
+    $("needed").innerHTML = need === null ? "At this fee, no rise in approvals is enough."
+      : need === 0 ? "At this fee, Outpost pays for itself even with no rise in approvals."
+      : `It breaks even if approvals rise by <b>${(need * 100).toFixed(1)}%</b>. Outpost claims 7% or more.`;
+
+    $("sRemoved").innerHTML = signed(removed - own);
+    $("sOwnRow").hidden = own === 0; $("sOwn").innerHTML = signed(own);
+    $("ownSum").textContent = own ? "(" + eur(own) + ")" : "";
+    $("sExtra").innerHTML = signed(extra);
+    $("sFee").innerHTML = signed(-feeAmt);
+    $("sNet").innerHTML = signed(net);
+
+  }
+
+  $("inputs").addEventListener("input", render);
+  $("inputs").addEventListener("change", render);
+  $("inputs").addEventListener("submit", (e) => e.preventDefault());
+  render();
+})();
+</script>
+</body>
+</html>
